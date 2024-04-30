@@ -252,6 +252,32 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   /**
+   * Constructs a {@code UnifiedJedis} instance with the given parameters.
+   *
+   * @param provider                the connection provider for redirect handling
+   * @param maxAttempts             the maximum number of attempts to execute a command before giving up
+   * @param maxTotalRetriesDuration the maximum total duration to retry commands before giving up
+   */
+  public UnifiedJedis(RedirectConnectionProvider provider, int maxAttempts, Duration maxTotalRetriesDuration) {
+    this(new RedirectCommandExecutor(provider, maxAttempts, maxTotalRetriesDuration), provider);
+  }
+
+  /**
+   * A constructor with an additional parameter for customizing the Redis communication protocol.
+   *
+   * @param provider                the connection provider for redirect handling
+   * @param maxAttempts             the maximum number of attempts to execute a command before giving up
+   * @param maxTotalRetriesDuration the maximum total duration to retry commands before giving up
+   * @param protocol                the Redis protocol implementation to use
+   */
+  protected UnifiedJedis(RedirectConnectionProvider provider, int maxAttempts, Duration maxTotalRetriesDuration,
+      RedisProtocol protocol) {
+    this(new RedirectCommandExecutor(provider, maxAttempts, maxTotalRetriesDuration), provider, new CommandObjects(),
+        protocol);
+  }
+
+
+  /**
    * @deprecated Sharding/Sharded feature will be removed in next major release.
    */
   @Deprecated

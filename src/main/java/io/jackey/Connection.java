@@ -84,6 +84,10 @@ public class Connection implements Closeable {
     return ((DefaultJedisSocketFactory) socketFactory).getHostAndPort();
   }
 
+  public final ConnectionPool getMemberOf() {
+    return memberOf;
+  }
+
   public int getSoTimeout() {
     return soTimeout;
   }
