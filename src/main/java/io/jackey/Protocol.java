@@ -65,6 +65,7 @@ public final class Protocol {
   private static final String NOAUTH_PREFIX = "NOAUTH";
   private static final String WRONGPASS_PREFIX = "WRONGPASS";
   private static final String NOPERM_PREFIX = "NOPERM";
+  private static final String REDIRECT_PREFIX = "REDIRECT ";
 
   private Protocol() {
     throw new InstantiationError("Must not instantiate this class");
@@ -100,6 +101,9 @@ public final class Protocol {
 //      throw new JedisAskDataException(message, new HostAndPort(askInfo[1],
 //          Integer.parseInt(askInfo[2])), Integer.parseInt(askInfo[0]));
       throw new JedisAskDataException(message, HostAndPort.from(askInfo[1]), Integer.parseInt(askInfo[0]));
+    } else if (message.startsWith(REDIRECT_PREFIX)) {
+      String host = parseTargetHost(message);
+      throw new JedisRedirectionException(message, HostAndPort.from(host), -1); // slot -1 means standalone
     } else if (message.startsWith(CLUSTERDOWN_PREFIX)) {
       throw new JedisClusterException(message);
     } else if (message.startsWith(BUSY_PREFIX)) {
@@ -138,6 +142,11 @@ public final class Protocol {
     response[0] = messageInfo[1];
     response[1] = messageInfo[2];
     return response;
+  }
+
+  private static String parseTargetHost(String clusterRedirectResponse) {
+    String[] messageInfo = clusterRedirectResponse.split(" ");
+    return messageInfo[1];
   }
 
   private static Object process(final RedisInputStream is) {

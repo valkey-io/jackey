@@ -145,6 +145,31 @@ replicaof localhost 6388
 extended-redis-compatibility yes
 endef
 
+define VALKEY12_CONF
+daemonize yes
+protected-mode no
+port 6390
+pidfile /tmp/valkey12.pid
+logfile /tmp/valkey12.log
+save ""
+appendonly no
+extended-redis-compatibility yes
+replica-enable-redirect yes
+endef
+
+define VALKEY13_CONF
+daemonize yes
+protected-mode no
+port 6391
+pidfile /tmp/valkey13.pid
+logfile /tmp/valkey13.log
+save ""
+appendonly no
+replicaof localhost 6390
+extended-redis-compatibility yes
+replica-enable-redirect yes
+endef
+
 # SENTINELS
 define VALKEY_SENTINEL1
 port 26379
@@ -409,6 +434,8 @@ export VALKEY8_CONF
 export VALKEY9_CONF
 export VALKEY10_CONF
 export VALKEY11_CONF
+export VALKEY12_CONF
+export VALKEY13_CONF
 export VALKEY_SENTINEL1
 export VALKEY_SENTINEL2
 export VALKEY_SENTINEL3
@@ -445,6 +472,8 @@ start: stunnel cleanup compile-module
 	echo "$$VALKEY9_CONF" | valkey-server -
 	echo "$$VALKEY10_CONF" | valkey-server -
 	echo "$$VALKEY11_CONF" | valkey-server -
+	echo "$$VALKEY12_CONF" | valkey-server -
+	echo "$$VALKEY13_CONF" | valkey-server -
 	echo "$$VALKEY_SENTINEL1" > /tmp/sentinel1.conf && valkey-server /tmp/sentinel1.conf --sentinel
 	@sleep 0.5
 	echo "$$VALKEY_SENTINEL2" > /tmp/sentinel2.conf && valkey-server /tmp/sentinel2.conf --sentinel
@@ -465,6 +494,7 @@ start: stunnel cleanup compile-module
 	echo "$$VALKEY_STABLE_CLUSTER_NODE3_CONF" | valkey-server -
 	echo "$$VALKEY_UDS" | valkey-server -
 	echo "$$VALKEY_UNAVAILABLE_CONF" | valkey-server -
+	@sleep 0.5
 	valkey-cli -a cluster --cluster create 127.0.0.1:7479 127.0.0.1:7480 127.0.0.1:7481 --cluster-yes
 cleanup:
 	- rm -vf /tmp/valkey_cluster_node*.conf 2>/dev/null
@@ -487,6 +517,8 @@ stop:
 	kill `cat /tmp/valkey9.pid`
 	kill `cat /tmp/valkey10.pid`
 	kill `cat /tmp/valkey11.pid`
+	kill `cat /tmp/valkey12.pid`
+	kill `cat /tmp/valkey13.pid`
 	kill `cat /tmp/sentinel1.pid`
 	kill `cat /tmp/sentinel2.pid`
 	kill `cat /tmp/sentinel3.pid`
